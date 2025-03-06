@@ -1,0 +1,62 @@
+import yfinance as yf
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+#Using the Ticker function i extracted data on to create a ticker object.
+tesla = yf.Ticker('TSLA')
+print(tesla)
+
+#Using the ticker object and the function history i extracted stock information and saved it in a dataframe named tesla_data.
+tesla_data = tesla.history(period="max")
+
+print(tesla_data)
+
+#Reset the index using the reset_index(inplace=True) function on the tesla_data DataFrame and display the first five rows of the tesla_data dataframe using the head function.
+tesla_data.reset_index(inplace=True)
+tesla_data.head()
+
+#Extracting revenue data
+
+#Used the requests library to download the webpage then Saved the text of the response as a variable named html_data.
+html_data = requests.get("https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/revenue.htm").text
+
+#Parse the html data using beautiful_soup using parser i.e html5lib or html.parser.
+soup = BeautifulSoup(html_data,"html5lib")
+
+
+#Extracted date and revenue data from the second table on a webpage and stores it in a DataFrame.
+tesla_Revenue = pd.DataFrame(columns=["Date","Revenue"])
+
+rows = []
+for row in soup.find_all("tbody")[1].find_all("tr"):
+    cols = row.find_all("td")
+    date = cols[0].text.strip()  
+    revenue = cols[1].text.strip() 
+    rows.append({"Date": date, "Revenue": revenue})
+tesla_revenue = pd.DataFrame(rows)
+print(tesla_revenue.head())
+
+#remove the comma and dollar sign from the Revenue column.
+tesla_revenue["Revenue"] = tesla_revenue['Revenue'].str.replace(',|\$',"")
+
+#removed  null or empty strings in the Revenue column.
+tesla_revenue.dropna(inplace=True)
+tesla_revenue = tesla_revenue[tesla_revenue['Revenue'] != ""]
+
+
+#Display the last 5 row of the tesla_revenue dataframe using the tail function. 
+print(tesla_revenue.tail())
+
+#Using the Ticker function i entered  the ticker symbol of the stockiwe want to extract data on to create a ticker object "GME"
+gamestop_data = yf.Ticker("GME")
+
+#extracted stock history and saved it to "gme_data" variable
+gme_data = gamestop_data.history(period="max")
+
+#reset the index and printed first 5 rows
+gme_data.reset_index(inplace=True)
+print(gme_data.head())
+
+
+
